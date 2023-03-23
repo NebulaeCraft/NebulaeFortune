@@ -20,25 +20,25 @@ import (
 	"time"
 )
 
-type yunshi struct {
+type Yunshi struct {
 	Text    string `json:"text"`
 	Emotion int    `json:"emotion"`
 }
 
-type placement struct {
+type Placement struct {
 	Rotate   float64     `json:"rotate"`
-	Rotatex  float64     `json:"rotatex"`
-	Rotatey  float64     `json:"rotatey"`
+	RotateX  float64     `json:"rotatex"`
+	RotateY  float64     `json:"rotatey"`
 	Pos      [][]float64 `json:"pos"`
 	FontSize float64     `json:"fontsize"`
 }
 
-type ysCfg struct {
-	Yunshi         []yunshi    `json:"yunshi"`
+type YunshiConfig struct {
+	Yunshi         []Yunshi    `json:"yunshi"`
 	Font           string      `json:"font"`
 	Color          []float64   `json:"color"`
 	Emotion        []string    `json:"emotion"`
-	Placement      []placement `json:"placement"`
+	Placement      []Placement `json:"placement"`
 	EmotionPalette []color.Palette
 	FontFace       *truetype.Font
 }
@@ -48,7 +48,7 @@ func DrawRP(rp string) image.Image {
 	img, _, _ := image.Decode(bytes.NewReader(bg))
 	dc := gg.NewContext(500, 500)
 	dc.DrawImage(img, 0, 0)
-	dc.SetFontFace(truetype.NewFace(ysConfig.FontFace, &truetype.Options{
+	dc.SetFontFace(truetype.NewFace(yunshiConfig.FontFace, &truetype.Options{
 		Size: 100,
 	}))
 
@@ -65,54 +65,54 @@ func DrawRP(rp string) image.Image {
 }
 
 func DrawYS(ys string, emo int) image.Image {
-	bg, _ := os.ReadFile(ysConfig.Emotion[emo])
+	bg, _ := os.ReadFile(yunshiConfig.Emotion[emo])
 	img, _, _ := image.Decode(bytes.NewReader(bg))
 	dc := gg.NewContext(img.Bounds().Dx(), img.Bounds().Dy())
 	dc.DrawImage(img, 0, 0)
-	dc.SetRGB(ysConfig.Color[0], ysConfig.Color[1], ysConfig.Color[2])
+	dc.SetRGB(yunshiConfig.Color[0], yunshiConfig.Color[1], yunshiConfig.Color[2])
 
 	ysLetter := strings.Split(ys, "")
 
-	if len(ysLetter) > len(ysConfig.Placement) {
-		log.Fatalln("placement length not enough!")
+	if len(ysLetter) > len(yunshiConfig.Placement) {
+		log.Fatalln("Placement length not enough!")
 		return nil
 	}
 
 	l := len(ysLetter) - 1
 
-	dc.SetFontFace(truetype.NewFace(ysConfig.FontFace, &truetype.Options{
-		Size: ysConfig.Placement[l].FontSize,
+	dc.SetFontFace(truetype.NewFace(yunshiConfig.FontFace, &truetype.Options{
+		Size: yunshiConfig.Placement[l].FontSize,
 	}))
-	dc.RotateAbout(gg.Radians(ysConfig.Placement[l].Rotate), ysConfig.Placement[l].Rotatex, ysConfig.Placement[l].Rotatey)
+	dc.RotateAbout(gg.Radians(yunshiConfig.Placement[l].Rotate), yunshiConfig.Placement[l].RotateX, yunshiConfig.Placement[l].RotateY)
 	for i, e := range ysLetter {
-		dc.DrawString(e, ysConfig.Placement[l].Pos[i][0], ysConfig.Placement[l].Pos[i][1])
-		fmt.Println(e, ysConfig.Placement[l].Pos[i][0], ysConfig.Placement[l].Pos[i][1])
+		dc.DrawString(e, yunshiConfig.Placement[l].Pos[i][0], yunshiConfig.Placement[l].Pos[i][1])
+		fmt.Println(e, yunshiConfig.Placement[l].Pos[i][0], yunshiConfig.Placement[l].Pos[i][1])
 	}
 	return dc.Image()
 }
 
-var ysConfig ysCfg
+var yunshiConfig YunshiConfig
 
 func main() {
 	jsonFile, _ := os.ReadFile("./ys.json")
-	json.Unmarshal(jsonFile, &ysConfig)
+	_ = json.Unmarshal(jsonFile, &yunshiConfig)
 
 	bg, _ := os.ReadFile("bg.png")
 	img, _, _ := image.Decode(bytes.NewReader(bg))
 	palRP, _ := palgen.Generate(img, 255)
 	palRP = append(palRP, image.Transparent)
 
-	for _, e := range ysConfig.Emotion {
+	for _, e := range yunshiConfig.Emotion {
 		bg, _ = os.ReadFile(e)
 		img, _, _ = image.Decode(bytes.NewReader(bg))
 		pal, _ := palgen.Generate(img, 255)
 		pal = append(pal, image.Transparent)
-		ysConfig.EmotionPalette = append(ysConfig.EmotionPalette, pal)
+		yunshiConfig.EmotionPalette = append(yunshiConfig.EmotionPalette, pal)
 	}
 
-	fontBytes, _ := os.ReadFile(ysConfig.Font)
-	ysConfig.FontFace, _ = truetype.Parse(fontBytes)
-	fmt.Println(ysConfig)
+	fontBytes, _ := os.ReadFile(yunshiConfig.Font)
+	yunshiConfig.FontFace, _ = truetype.Parse(fontBytes)
+	fmt.Println(yunshiConfig)
 
 	rand.Seed(time.Now().UnixNano())
 
@@ -128,7 +128,7 @@ func main() {
 		buf := new(bytes.Buffer)
 		img := DrawRP(rp)
 		c.Header("Content-Type", "image/gif")
-		draw.Draw(imgCtx, img.Bounds(), img, image.ZP, draw.Src)
+		draw.Draw(imgCtx, img.Bounds(), img, image.Point{}, draw.Src)
 		_ = gif.EncodeAll(buf, &gif.GIF{
 			Image:     []*image.Paletted{imgCtx},
 			Delay:     []int{0},
@@ -141,18 +141,18 @@ func main() {
 		ys := c.Query("ys")
 		emo := c.Query("emo")
 		if ys == "" {
-			ysCol := ysConfig.Yunshi[rand.Intn(len(ysConfig.Yunshi))]
+			ysCol := yunshiConfig.Yunshi[rand.Intn(len(yunshiConfig.Yunshi))]
 			ys = ysCol.Text
 			emo = strconv.Itoa(ysCol.Emotion)
 		}
 		log.Println("ys: " + ys)
 		log.Println("emo: " + emo)
 		emoNum, _ := strconv.ParseInt(emo, 10, 64)
-		imgCtx := image.NewPaletted(image.Rect(0, 0, 500, 500), ysConfig.EmotionPalette[emoNum])
+		imgCtx := image.NewPaletted(image.Rect(0, 0, 500, 500), yunshiConfig.EmotionPalette[emoNum])
 		buf := new(bytes.Buffer)
 		img := DrawYS(ys, int(emoNum))
 		c.Header("Content-Type", "image/gif")
-		draw.Draw(imgCtx, img.Bounds(), img, image.ZP, draw.Src)
+		draw.Draw(imgCtx, img.Bounds(), img, image.Point{}, draw.Src)
 		_ = gif.EncodeAll(buf, &gif.GIF{
 			Image:     []*image.Paletted{imgCtx},
 			Delay:     []int{0},
