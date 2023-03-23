@@ -1,0 +1,61 @@
+{
+  "yunshi":[
+    {
+      "text":"好的",
+      "emotion":0
+    },
+    {
+      "text":"好诶",
+      "emotion":1
+    },
+    {
+      "text":"好诶诶",
+      "emotion":2
+    },
+    {
+      "text":"好诶诶诶",
+      "emotion":2
+    },
+    {
+      "text":"好诶诶诶诶//太长了 需要placement中配置5个字的样式",
+      "emotion":2
+    }
+  ],
+  "font": "HYChengXingJ.ttf",
+  "color": [17, 35, 212],
+  "emotion": [
+    "emotion/0.png",
+    "emotion/1.png",
+    "emotion/2.png"
+  ],
+  "placement": [
+    {
+      "rotate": 10,
+      "rotatex": 270,
+      "rotatey": 50,
+      "pos": [[400,290]],
+      "fontsize": 120
+    },
+    {
+      "rotate": 10,
+      "rotatex": 270,
+      "rotatey": 50,
+      "pos": [[395,230],[400,350]],
+      "fontsize": 120
+    },
+    {
+      "rotate": 10,
+      "rotatex": 270,
+      "rotatey": 50,
+      "pos": [[411,197],[413,283],[415,370]],
+      "fontsize": 90
+    },
+    {
+      "rotate": 10,
+      "rotatex": 270,
+      "rotatey": 50,
+      "pos": [[420,187],[422,248],[424,309],[426,370]],
+      "fontsize": 90
+    }
+  ]
+}
